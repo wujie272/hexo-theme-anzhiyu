@@ -388,34 +388,35 @@ if site.data.about
           const apiHost = "#{umamiApiHost}";
           const websiteId = "#{umamiWebsiteId}";
           const token = "#{umamiToken}";
-          
-          const now = Date.now();
-          const todayStart = new Date().setHours(0, 0, 0, 0);
-          const yesterdayStart = todayStart - 86400000;
-          const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
 
-          const fetchStats = async (startAt, endAt) => {
-            const res = await fetch(`${apiHost}/api/websites/${websiteId}/stats?startAt=${startAt}&endAt=${endAt}`, {
-              headers: { 'Authorization': `Bearer ${token}` }
-            });
-            return res.json();
-          };
-
-          Promise.all([
-            fetchStats(todayStart, now),      // today
-            fetchStats(yesterdayStart, todayStart), // yesterday
-            fetchStats(monthStart, now),      // month
-            fetchStats(0, now)                // total
-          ])
-            .then(([today, yesterday, month, total]) => {
-              const title = [i18nStats.today_visitors, i18nStats.today_views, i18nStats.yesterday_visitors, i18nStats.yesterday_views, i18nStats.month_views, i18nStats.total_views];
+          // 直接请求 Worker（无需参数）
+          fetch(apiHost, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+            .then(res => {
+              if (!res.ok) throw new Error(`HTTP ${res.status}`);
+              return res.json();
+            })
+            .then(data => {
+              // Worker 返回的数据结构示例：
+              // {"today_uv":11,"today_pv":96,"online_users":1,"yesterday_uv":0,"yesterday_pv":0,"last_month_pv":4,"total_uv":39,"total_pv":303}
+      
+              const title = [
+                i18nStats.today_visitors,
+                i18nStats.today_views,
+                i18nStats.yesterday_visitors,
+                i18nStats.yesterday_views,
+                i18nStats.month_views,
+                i18nStats.total_views
+              ];
+      
               const num = [
-                today.visitors?.value || today.uniques?.value || 0,
-                today.pageviews?.value || 0,
-                yesterday.visitors?.value || yesterday.uniques?.value || 0,
-                yesterday.pageviews?.value || 0,
-                month.pageviews?.value || 0,
-                total.pageviews?.value || 0
+                data.today_uv || 0,
+                data.today_pv || 0,
+                data.yesterday_uv || 0,
+                data.yesterday_pv || 0,
+                data.last_month_pv || 0,
+                data.total_pv || 0
               ];
 
               renderStatistic(title, num);
