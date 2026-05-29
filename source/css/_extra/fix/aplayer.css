@@ -7,11 +7,11 @@
 }
 
 /* 导航栏音乐 */
-@media screen and (max-width: 1200px) {
+/* @media screen and (max-width: 1200px) {
   #nav-music {
     display: none !important;
   }
-}
+} */
 
 #nav-music {
   display: flex;
