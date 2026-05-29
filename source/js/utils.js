@@ -993,10 +993,90 @@ const anzhiyu = {
     // 切换标志位
     changeMusicListFlag = !changeMusicListFlag;
   },
+  // 移动端滑动手势：左右滑动切歌
+  addMobileMusicGestures: function () {
+    const navMusic = document.getElementById("nav-music");
+    if (!navMusic || !anzhiyu.hasMobile()) return;
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let isSwiping = false;
+
+    navMusic.addEventListener("touchstart", e => {
+      const touch = e.touches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+      isSwiping = false;
+      navMusic.dataset.swiping = "false";
+    }, { passive: true });
+
+    navMusic.addEventListener("touchmove", e => {
+      if (!touchStartX) return;
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - touchStartX;
+      const deltaY = touch.clientY - touchStartY;
+      // 水平滑动 > 垂直滑动 才算滑动手势
+      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
+        isSwiping = true;
+      }
+    }, { passive: true });
+
+    navMusic.addEventListener("touchend", e => {
+      if (!isSwiping || !touchStartX) {
+        touchStartX = 0;
+        touchStartY = 0;
+        return;
+      }
+
+      const deltaX = e.changedTouches[0].clientX - touchStartX;
+      const threshold = 40; // 最小滑动距离
+
+      if (Math.abs(deltaX) > threshold) {
+        // 标记滑动中，阻止随后的 click 事件触发展开
+        navMusic.dataset.swiping = "true";
+
+        if (deltaX > 0) {
+          // 右滑 → 上一曲
+          anzhiyu.musicSkipBack();
+          anzhiyu.snackbarShow("⏪ 上一曲");
+        } else {
+          // 左滑 → 下一曲
+          anzhiyu.musicSkipForward();
+          anzhiyu.snackbarShow("⏩ 下一曲");
+        }
+
+        // 触觉反馈（支持 vibrate 的设备）
+        if (navigator.vibrate) navigator.vibrate(15);
+      }
+
+      touchStartX = 0;
+      touchStartY = 0;
+      isSwiping = false;
+    }, { passive: true });
+  },
+
   // 控制台音乐列表监听
   addEventListenerConsoleMusicList: function () {
     const navMusic = document.getElementById("nav-music");
     if (!navMusic) return;
+
+    // 移动端：点击播放器展开/折叠歌词
+    if (anzhiyu.hasMobile()) {
+      navMusic.addEventListener("click", e => {
+        // 滑动中触发的 click 忽略
+        if (navMusic.dataset.swiping === "true") {
+          navMusic.dataset.swiping = "false";
+          return;
+        }
+        // 点的是播放按钮让 APlayer 自己处理
+        if (e.target.closest(".aplayer-button")) return;
+        // 切换歌词展开/折叠
+        anzhiyu.musicTelescopic();
+      });
+      return;
+    }
+
+    // 桌面端：原有逻辑 - 显示播放列表
     navMusic.addEventListener("click", e => {
       const aplayerList = navMusic.querySelector(".aplayer-list");
       const listBtn = navMusic.querySelector(
