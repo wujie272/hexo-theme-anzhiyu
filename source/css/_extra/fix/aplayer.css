@@ -321,3 +321,80 @@
 #nav-music .aplayer .aplayer-pic .aplayer-button {
   pointer-events: all;
 }
+
+/* ===== 移动端优化 ===== */
+
+/* 手机和小平板：安全区适配 + 紧凑布局 */
+@media screen and (max-width: 768px) {
+  #nav-music {
+    bottom: calc(20px + env(safe-area-inset-bottom, 10px));
+    left: 12px;
+    transform-origin: left bottom;
+  }
+
+  /* 播放中：歌名缩短，防止挤出屏幕 */
+  #nav-music .aplayer .aplayer-info .aplayer-music .aplayer-title {
+    max-width: 80px;
+  }
+
+  /* 歌词展开时，手机上宽度收窄 */
+  #nav-music.stretch .aplayer.aplayer-withlrc .aplayer-lrc {
+    width: 120px;
+  }
+
+  /* 歌词文字适配窄屏 */
+  #nav-music .aplayer .aplayer-lrc p {
+    font-size: 12px;
+    line-height: 30px !important;
+    height: 30px !important;
+  }
+}
+
+/* 极小屏手机（iPhone SE / 小屏安卓） */
+@media screen and (max-width: 400px) {
+  #nav-music {
+    bottom: calc(10px + env(safe-area-inset-bottom, 8px));
+    left: 8px;
+  }
+
+  #nav-music .aplayer .aplayer-info .aplayer-music .aplayer-title {
+    max-width: 60px;
+    font-size: 13px;
+  }
+
+  #nav-music.stretch .aplayer.aplayer-withlrc .aplayer-lrc {
+    width: 80px;
+  }
+
+  #nav-music .aplayer .aplayer-lrc p {
+    font-size: 11px;
+    line-height: 24px !important;
+    height: 24px !important;
+  }
+
+  #nav-music.stretch .aplayer.aplayer-withlrc .aplayer-lrc {
+    margin-left: 4px;
+  }
+}
+
+/* 横屏手机：移到右下角避免被手势导航遮挡 */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+  #nav-music {
+    bottom: auto;
+    top: calc(10px + env(safe-area-inset-top, 10px));
+    left: auto;
+    right: calc(12px + env(safe-area-inset-right, 10px));
+    transform-origin: right top;
+  }
+}
+
+/* 平板：居中偏左，歌词适当加宽 */
+@media screen and (min-width: 769px) and (max-width: 1200px) {
+  #nav-music.stretch .aplayer.aplayer-withlrc .aplayer-lrc {
+    width: 150px;
+  }
+
+  #nav-music .aplayer .aplayer-info .aplayer-music .aplayer-title {
+    max-width: 150px;
+  }
+}
